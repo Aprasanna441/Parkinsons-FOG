@@ -1,10 +1,10 @@
 from flask import Blueprint
-from controllers.UserController import signup,login,login_signup,home,dashboard,logout
+from controllers.UserController import signup,login,login_signup,dashboard,logout
 
 
 router = Blueprint('routes', __name__)
 
-router.route('/home',methods=['GET'])(home)
+# router.route('/home',methods=['GET','POST'])(home)
 
 
 router.route('/auth', methods=['GET'])(login_signup)

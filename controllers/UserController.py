@@ -7,6 +7,10 @@ from flask_bcrypt import Bcrypt
 from models.Models import User,db
 from flask_session import Session
 
+
+from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileAllowed, FileRequired
+
 bcrypt=Bcrypt()
 
 def hash_password(password):
@@ -16,9 +20,26 @@ def check_password():
     pass
 
 
-@login_required
-def home():
-    return render_template("home.html")
+
+
+
+
+
+
+# @login_required
+# def home():
+#     form = UploadForm()
+#     if form.validate_on_submit():
+#         file = form.file.data
+#         # Do something with the uploaded file (e.g., save it to disk, process it)
+
+#         return f'File {file.filename} successfully uploaded.'
+
+#     return render_template('home.html', form=form)
+    
+
+
+
 
 
 
@@ -89,5 +110,6 @@ def logout():
 @login_required
 def dashboard():
     return  render_template("dashboard.html")
+
 
 

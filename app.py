@@ -1,10 +1,13 @@
-from flask import Flask,render_template
+from flask import Flask,render_template,redirect,jsonify
 from flask_migrate import Migrate
 from  routes.UserRoutes import router
 from models.Models import db,User
 from flask_login import LoginManager,login_required
 
-
+from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileAllowed, FileRequired
+import joblib
+import pandas as pd
 
 
 
@@ -30,11 +33,50 @@ def create_app():
 
 app = create_app()
 
-@app.route('/')
+
+class UploadForm(FlaskForm):
+    file = FileField('File', validators=[
+        FileRequired(),
+        FileAllowed(['txt', 'csv', 'pdf'], 'Allowed file types are txt, csv, pdf, png, jpg, jpeg, gif')
+    ])
+
+
+
+@app.route('/',methods=['GET','POST'])
 @login_required
 def mainpage():
-   return render_template("home.html")
-# migrate = Migrate(app, db)  # Initializing the migration
+    form = UploadForm()
+
+    if form.validate_on_submit():
+        file = form.file.data
+        upload_file(file)
+        
+        
+        
+        
+        # Do something with the uploaded file (e.g., save it to disk, process it)
+
+        
+
+    return render_template('home.html', form=form)
+
+
+
+def upload_file(file):
+    model = joblib.load('naive_bayes.pkl')
+    data=pd.read_csv(file)
+    prediction = model.predict(data[:200])
+    print(prediction)
+    return jsonify({'prediction': prediction.tolist()})
+
+
+
+
+    return render_template("result.html")
+    
+    
+
+
 
 
 
