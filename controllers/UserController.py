@@ -26,16 +26,12 @@ def check_password():
 
 
 
-# @login_required
-# def home():
-#     form = UploadForm()
-#     if form.validate_on_submit():
-#         file = form.file.data
-#         # Do something with the uploaded file (e.g., save it to disk, process it)
+@login_required
+def home():
+   
+ 
 
-#         return f'File {file.filename} successfully uploaded.'
-
-#     return render_template('home.html', form=form)
+    return render_template('home.html')
     
 
 
@@ -60,7 +56,7 @@ def signup():
                 db.session.add(user)
                 db.session.commit()
                 login_user(user)
-                return redirect(url_for('routes.home'))
+                return redirect("/")
 
             else:
                 flash("Password and Confirm Password doesnt match",'error') 
@@ -83,7 +79,7 @@ def login():
              print("Logged in")
              login_user(user)           
              print("Logged in")
-             return redirect(url_for('routes.home'))
+             return redirect('/')
         else:
              print("didnt hash")
              flash("Invalid Password",'error')

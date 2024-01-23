@@ -7,6 +7,8 @@
 <style>
     body{
         background-color: wheat;
+        text-decoration: none;
+        list-style: none;
     }
     .formpage{
         display: flex;
@@ -19,9 +21,11 @@
 </style>
 
 <h1 style="text-align: center;">Results</h1>
+<img src="{{ url_for('static', filename='accelerometer_graph.png') }}" alt="Accelerometer Plot">
 
-
-
+{% for index in range(prediction|length) %}
+        <li>{{ index + 1 }}. {{ prediction[index] }}</li>
+{% endfor %}
 
 
 

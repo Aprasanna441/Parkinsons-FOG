@@ -6,8 +6,10 @@ from flask_login import LoginManager,login_required
 
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, FileRequired
+from wtforms import SelectField
 import joblib
 import pandas as pd
+
 
 
 
@@ -39,6 +41,8 @@ class UploadForm(FlaskForm):
         FileRequired(),
         FileAllowed(['txt', 'csv', 'pdf'], 'Allowed file types are txt, csv, pdf, png, jpg, jpeg, gif')
     ])
+    mlmodel = SelectField('Select Model', choices=[('NaiveBayes', 'Naive Bayes'), ('DecisionTree', 'Decision Tree'), ('KNearest', 'KNearest'),('svm', 'svm')])
+
 
 
 
@@ -48,31 +52,94 @@ def mainpage():
     form = UploadForm()
 
     if form.validate_on_submit():
+        
         file = form.file.data
-        upload_file(file)
+        modelDict={
+            "DecisionTree":"decisiontree.pkl",
+            "KNearest":"final_naive_bayes.pkl",
+            "NaiveBayes":"naive_bayes.pkl",
+            "svm":"svm.pkl"
+        }
         
+        selected_model=modelDict[form.mlmodel.data]
+        print(selected_model)
+
+
+        image,prediction=upload_file(file,selected_model)
+       
+        return render_template('result.html',  image_path=image,prediction=prediction)
         
+
         
-        
-        # Do something with the uploaded file (e.g., save it to disk, process it)
+
 
         
 
     return render_template('home.html', form=form)
-
-
-
-def upload_file(file):
-    model = joblib.load('naive_bayes.pkl')
+import os
+from io import BytesIO
+import matplotlib.pyplot as plt
+import numpy as np
+def upload_file(file,mlmodel):
+    #prediction part
+    model = joblib.load(mlmodel)
     data=pd.read_csv(file)
-    prediction = model.predict(data[:200])
-    print(prediction)
-    return jsonify({'prediction': prediction.tolist()})
+    prediction = model.predict(data[:1000])    
+    classes=classes=["StartHesitation","Turn","Walk"]
+    
+    decoded_classes = []
+
+    #decoding [0,0,1] type
+    for i in prediction:
+        class_index = np.argmax(i)
+        decoded_class = classes[class_index]
+        decoded_classes.append(decoded_class)
+    print(decoded_classes)
+    
+ 
+
+    #plotting graph
+    time = data['Time']
+    acc_ap = data['AccV']
+    acc_ml = data['AccML']
+    acc_v = data['AccAP']
+    plt.figure(figsize=(10, 6))
+
+# Plotting AccAp
+    fig, ax = plt.subplots()
+    ax.plot(time, acc_ap, label='AccAP')
+    ax.plot(time, acc_ml, label='AccML')
+    ax.plot(time, acc_v, label='AccV')
+ 
+
+    ax.set_xlabel('Time')
+    ax.set_ylabel('Acceleration')
+    ax.set_title('Accelerometer Data with Heartbeat-Like Pattern')
+    ax.legend()
+
+
+    # Display the plot
+    # plt.show()
+    buf = BytesIO() 
+    fig.savefig(buf, format='png')
+    buf.seek(0)
+
+    image_path = os.path.join(app.root_path, 'static', 'accelerometer_graph.png')
+    with open(image_path, 'wb') as f:
+        f.write(buf.getvalue())
+
+
+    return  image_path,decoded_classes
+   
+   
+        
+    
+    
 
 
 
 
-    return render_template("result.html")
+    
     
     
 
